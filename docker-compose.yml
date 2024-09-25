@@ -1,0 +1,27 @@
+services:
+  llm-container:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+      - ./models:/models
+    ports:
+      - 2242:2242
+    ipc: host
+    image: alpindale/aphrodite-openai:latest
+    command: --model /models/gemma-2b
+  caddy:
+    image: caddy:latest
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    ports:
+      - 8080:80
+      - 443:443
+    depends_on:
+      - llm-container
