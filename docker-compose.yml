@@ -11,12 +11,14 @@ services:
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
       - ./models:/models
-      - ./alpaca.jinja:/alpaca.jinja
+      - ./gemma-it.jinja:/gemma-it.jinja
     ports:
       - 2242:2242
+    networks:
+      - llm-network
     ipc: host
     image: alpindale/aphrodite-openai:latest
-    command: --model /models/gemma-2b --chat-template /alpaca.jinja
+    command: --model /models/gemma-2b --chat-template /gemma-it.jinja
   caddy:
     image: caddy:latest
     volumes:
@@ -24,5 +26,11 @@ services:
     ports:
       - 8080:80
       - 443:443
+    networks:
+      - llm-network
     depends_on:
       - llm-container
+
+networks:
+  llm-network:
+    driver: bridge

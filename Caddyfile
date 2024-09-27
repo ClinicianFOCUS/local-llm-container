@@ -1,4 +1,9 @@
 localhost:443 {
     tls internal
-    reverse_proxy /v1/* vllm-openai:2242
+    reverse_proxy llm-container:2242
+}
+
+127.0.0.1:443 {
+    tls internal
+    reverse_proxy llm-container:2242
 }
