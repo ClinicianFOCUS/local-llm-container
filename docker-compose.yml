@@ -12,8 +12,6 @@ services:
       - ~/.cache/huggingface:/root/.cache/huggingface
       - ./models:/models
       - ./gemma-it.jinja:/gemma-it.jinja
-    ports:
-      - 2242:2242
     networks:
       - llm-network
     ipc: host
@@ -24,7 +22,6 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
     ports:
-      - 8080:80
       - 443:443
     networks:
       - llm-network
