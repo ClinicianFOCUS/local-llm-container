@@ -9,9 +9,7 @@ services:
               capabilities:
                 - gpu
     volumes:
-      - ~/.cache/huggingface:/root/.cache/huggingface
       - ./models:/models
-      - ./gemma-it.jinja:/gemma-it.jinja
     networks:
       - llm-network
     ipc: host
