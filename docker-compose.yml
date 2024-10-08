@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: Dockerfile.caddy
     ports:
-      - 443:443
+      - 3334:3334
     networks:
       - llm-network
     depends_on:

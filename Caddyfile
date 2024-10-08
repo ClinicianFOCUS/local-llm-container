@@ -1,9 +1,9 @@
-localhost:443 {
+localhost:3334 {
     tls internal
     reverse_proxy llm-container:2242
 }
 
-127.0.0.1:443 {
+127.0.0.1:3334 {
     tls internal
     reverse_proxy llm-container:2242
 }
