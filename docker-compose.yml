@@ -8,14 +8,16 @@ services:
               count: all
               capabilities:
                 - gpu
+    build:
+      context: .
+      dockerfile: Dockerfile.llm-cont
     user: "1000:1000" # Set the user to '1000:1000'
     volumes:
       - ./models:/models
     networks:
       - llm-network
     ipc: host
-    image: alpindale/aphrodite-openai:v0.6.2
-    command: --model /models/gemma-2-2b-it
+    command: --model /models/gemma-2-2b-it --rope-scaling 3
   caddy:
     container_name: caddy-llm-container # Name of the container
     user: "1000:1000" # Set the user to '1000:1000'
