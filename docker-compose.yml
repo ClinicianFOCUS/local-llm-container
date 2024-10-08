@@ -16,7 +16,7 @@ services:
       - llm-network
     ipc: host
     image: alpindale/aphrodite-openai:latest
-    command: --model /models/gemma-2b --chat-template /gemma-it.jinja
+    command: --model /models/gemma-2-2b-it
   caddy:
     image: caddy:latest
     volumes:
