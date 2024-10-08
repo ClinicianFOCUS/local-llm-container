@@ -8,6 +8,7 @@ services:
               count: all
               capabilities:
                 - gpu
+    user: "1000:1000" # Set the user to '1000:1000'
     volumes:
       - ./models:/models
     networks:
@@ -16,7 +17,7 @@ services:
     image: alpindale/aphrodite-openai:v0.6.2
     command: --model /models/gemma-2-2b-it
   caddy:
-    container_name: caddy # Name of the container
+    container_name: caddy-llm-container # Name of the container
     user: "1000:1000" # Set the user to '1000:1000'
     build:
       context: .
