@@ -13,12 +13,14 @@ services:
     networks:
       - llm-network
     ipc: host
-    image: alpindale/aphrodite-openai:latest
+    image: alpindale/aphrodite-openai:v0.6.2
     command: --model /models/gemma-2-2b-it
   caddy:
-    image: caddy:latest
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+    container_name: caddy # Name of the container
+    user: "1000:1000" # Set the user to '1000:1000'
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
     ports:
       - 443:443
     networks:
