@@ -41,7 +41,28 @@ Follow these steps to set up and run the services using Docker Compose:
 
 2. **Ensure Docker and Docker Compose are installed**. You can install Docker by following the instructions on the [official Docker website](https://docs.docker.com/get-docker/).
 
-3. **Build and start the services**:
+3. **Load your model**:
+
+   The LLM model is not included in the repository. You can download the model from the Huggingface (https://huggingface.co/)
+
+   We recommend installing Gemma-2-2b-it (https://huggingface.co/google/gemma-2-2b-it).
+
+   After downloading the model, place it in the `llm-container/models` directory and update the `MODEL_NAME` environment variable to the folder name of your model;
+
+   **Windows**
+
+      .. code-block:: bash
+
+            $env:MODEL_NAME="models/gemma-2-2b-it"
+
+   **Linux**
+
+      .. code-block:: bash
+
+            MODEL_NAME=models/gemma-2-2b-it
+
+
+4. **Build and start the services**:
 
    .. code-block:: bash
 
@@ -49,7 +70,7 @@ Follow these steps to set up and run the services using Docker Compose:
 
    This command will build the Docker images defined in the `Dockerfile.llm-cont` and `Dockerfile.caddy`, and start both the `llm-container` and `caddy` services.
 
-4. **Verify the services are running**:
+5. **Verify the services are running**:
 
    After the services start, you can check that the LLM model and Caddy web server are running correctly by accessing:
 
@@ -59,7 +80,7 @@ Follow these steps to set up and run the services using Docker Compose:
 Usage
 -----
 
-Running the Containers
+**Running the Containers**
 
 To start the containers and ensure everything is running correctly, use the following command:
 
@@ -73,7 +94,7 @@ This command will:
 
 You can access the services on `https://localhost:3334/docs` to interact with the Caddy server and the deployed LLM model.
 
-### Stopping the Containers
+**Stopping the Containers**
 
 To stop the containers:
 
