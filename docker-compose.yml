@@ -38,9 +38,12 @@ services:
       # Build context and Dockerfile for the Caddy container
       context: .
       dockerfile: Dockerfile.caddy
+
+    environment:
+      - LLM_CONTAINER_PORT=${LLM_CONTAINER_PORT:-3334}
     ports:
       # Map port 3334 on the host to port 3334 in the container
-      - 3334:3334
+      - ${LLM_CONTAINER_PORT:-3334}:${LLM_CONTAINER_PORT:-3334}
     networks:
       # Attach the container to the llm-network
       - llm-network
