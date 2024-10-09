@@ -53,13 +53,13 @@ Follow these steps to set up and run the services using Docker Compose:
 
       .. code-block:: bash
 
-            $env:MODEL_NAME="models/gemma-2-2b-it"
+            $env:MODEL_NAME="/models/gemma-2-2b-it"
 
    **Linux**
 
       .. code-block:: bash
 
-            MODEL_NAME=models/gemma-2-2b-it
+            MODEL_NAME=/models/gemma-2-2b-it
 
 
 4. **Build and start the services**:
