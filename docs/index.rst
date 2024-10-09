@@ -19,6 +19,14 @@ Docker-Compose Setup
 
 This documentation provides an overview of the Docker Compose configuration for the project, including the `llm-container` and `caddy` services.
 
+Prerequisites
+-------------
+
+- **Docker** and **Docker Compose** must be installed on your system. (https://docs.docker.com/engine/install/)
+- **Nvidia Docker runtime** must be installed. (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- **Nvidia CUDA Toolkit** must be installed. (https://developer.nvidia.com/cuda-downloads)
+
+
 Installation
 ------------
 
