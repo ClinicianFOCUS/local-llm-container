@@ -26,7 +26,9 @@ services:
       - llm-network
     ipc: host
     # Use the host's IPC namespace for inter-process communication
-    command: --model /models/gemma-2-2b-it
+    environment:
+      - MODEL_NAME=${MODEL_NAME:-/models/gemma-2-2b-it}
+    command: --model ${MODEL_NAME-:-/models/gemma-2-2b-it}
     # Command to run when the container starts
   caddy:
     # Service for the Caddy container
