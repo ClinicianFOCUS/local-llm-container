@@ -17,7 +17,7 @@ services:
     networks:
       - llm-network
     ipc: host
-    command: --model /models/gemma-2-2b-it --rope-scaling 3
+    command: --model /models/gemma-2-2b-it
   caddy:
     container_name: caddy-llm-container # Name of the container
     user: "1000:1000" # Set the user to '1000:1000'
