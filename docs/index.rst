@@ -9,6 +9,9 @@ Unburdening Primary Healthcare
 
 Welcome to the **Unburdening Primary Healthcare: An Open-Source AI Clinician Partner Platform** documentation. This project is a collaboration as part of the ClinicianFOCUS initiative with Conestoga College and Dr. Braedon Hendy. Below you'll find documentation for the core modules, API endpoints, and utilities used in this project. Below are the pages contents:
 
+.. contents::
+   :depth: 2
+   :local:
 
 
 Docker-Compose Setup
@@ -21,12 +24,12 @@ Installation
 
 Follow these steps to set up and run the services using Docker Compose:
 
-1. **Clone the repository** (if applicable):
+1. **Clone the repository**:
 
    .. code-block:: bash
 
-      git clone <your-repo-url>
-      cd <your-project-directory>
+      git clone https://github.com/ClinicianFOCUS/local-llm-container.git
+      cd local-llm-container
 
 2. **Ensure Docker and Docker Compose are installed**. You can install Docker by following the instructions on the [official Docker website](https://docs.docker.com/get-docker/).
 
@@ -34,7 +37,7 @@ Follow these steps to set up and run the services using Docker Compose:
 
    .. code-block:: bash
 
-      docker-compose up --build
+      docker-compose up -d --build
 
    This command will build the Docker images defined in the `Dockerfile.llm-cont` and `Dockerfile.caddy`, and start both the `llm-container` and `caddy` services.
 
@@ -43,7 +46,7 @@ Follow these steps to set up and run the services using Docker Compose:
    After the services start, you can check that the LLM model and Caddy web server are running correctly by accessing:
 
    - **LLM Service**: Runs internally in the Docker container.
-   - **Caddy Web Server**: Accessible on port 3334 at `https://localhost:3334`.
+   - **Caddy Web Server**: Accessible on port 3334 at `https://localhost:3334`. Pointing to the LLM Serivce.
 
 Usage
 -----
@@ -54,7 +57,7 @@ To start the containers and ensure everything is running correctly, use the foll
 
 .. code-block:: bash
 
-   docker-compose up
+   docker-compose up -d
 
 This command will:
 - Launch the `llm-container` for running the language model.
@@ -71,3 +74,9 @@ To stop the containers:
    docker-compose down
 
 This will stop and remove the containers, but the built images and mounted volumes will persist.
+
+
+Additonal Notes
+===============
+
+This service runs on the aphrodite engine. For additional help or support, please check out their github and documentation https://github.com/PygmalionAI/aphrodite-engine.
