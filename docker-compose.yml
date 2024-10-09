@@ -18,7 +18,6 @@ services:
       dockerfile: Dockerfile.llm-cont
     user: "1000:1000" # Set the user to '1000:1000'
     # Ensure the container runs with the specified user and group ID
-    # Ensure the container runs with the specified user and group ID
     volumes:
       # Mount the local models directory to the container's /models directory
       - ./models:/models
