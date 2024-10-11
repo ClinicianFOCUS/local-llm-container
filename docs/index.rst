@@ -108,4 +108,4 @@ This will stop and remove the containers, but the built images and mounted volum
 Additonal Notes
 ===============
 
-This service runs on the aphrodite engine. For additional help or support, please check out their github and documentation https://github.com/PygmalionAI/aphrodite-engine.
+This service runs on the Aphrodite engine, a high-performance inference engine for large language models. Aphrodite is designed for efficient text generation and processing. It offers features like low-latency inference and multi-GPU support, making it ideal for scalable AI applications. For additional help or support, please check out their GitHub repository and documentation at https://github.com/PygmalionAI/aphrodite-engine.
