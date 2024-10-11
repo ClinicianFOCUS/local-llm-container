@@ -1,6 +1,6 @@
 ## Summary
 
-Repository for the setup of a local LLM containerto support other activities and tools we are developing. This setup allows you to run a local instance of a Language Model (LLM) with GPU support and access it via HTTPS using Caddy reverse proxy.
+Repository for the setup of a local LLM container to support other activities and tools we are developing. This setup allows you to run a local instance of a Language Model (LLM) with GPU support and access it via HTTPS using Caddy reverse proxy.
 
 # Prerequisites
 
