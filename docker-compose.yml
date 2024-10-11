@@ -28,6 +28,7 @@ services:
     # Use the host's IPC namespace for inter-process communication
     environment:
       - MODEL_NAME=${MODEL_NAME:-/models/gemma-2-2b-it}
+      - HF_TOKEN=${HF_TOKEN}
     command: --model ${MODEL_NAME-:-/models/gemma-2-2b-it}
     # Command to run when the container starts
   caddy:
