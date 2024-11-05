@@ -29,7 +29,12 @@ services:
     environment:
       - MODEL_NAME=${MODEL_NAME:-/models/gemma-2-2b-it}
       - HF_TOKEN=${HF_TOKEN}
-    command: --model ${MODEL_NAME:-/models/gemma-2-2b-it}
+      - CHAT_TEMPLATE=${CHAT_TEMPLATE:-}
+    # Use command-line string concatenation for conditional command
+    # Only pass a chat template if one is provided
+    command: >
+      --model ${MODEL_NAME:-/models/gemma-2-2b-it}
+      ${CHAT_TEMPLATE:+--chat-template ${CHAT_TEMPLATE}}
     # Command to run when the container starts
   caddy:
     # Service for the Caddy container
