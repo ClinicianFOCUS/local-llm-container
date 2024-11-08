@@ -1,0 +1,11 @@
+# Use the official Python image
+FROM python:3.9-slim
+
+# Install FastAPI, Uvicorn, and requests
+RUN pip install fastapi uvicorn requests
+
+# Copy the FastAPI app to the container
+COPY ./api_wrapper.py api_wrapper.py
+
+# Expose FastAPI port
+EXPOSE 5000
