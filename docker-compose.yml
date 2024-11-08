@@ -1,44 +1,46 @@
 services:
-  # Define the services that will be run by Docker Compose
-  llm-container:
-    # Service for the LLM container
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama-data:/root/.ollama
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - OLLAMA_CONCURRENT_REQUESTS=2
+      - OLLAMA_QUEUE_ENABLED=true
+    networks:
+      - ollama_network
     deploy:
-      # Resource allocation settings
       resources:
         reservations:
-          # Device reservations
           devices:
             - driver: nvidia
               count: all
-              capabilities:
-                - gpu
+              capabilities: [gpu]
+
+  fastapi-wrapper:
     build:
-      # Build context and Dockerfile for the LLM container
       context: .
-      dockerfile: Dockerfile.llm-cont
-    user: "1000:1000" # Set the user to '1000:1000'
-    # Ensure the container runs with the specified user and group ID
-    volumes:
-      # Mount the local models directory to the container's /models directory
-      - ./models:/models
-    networks:
-      # Attach the container to the llm-network
-      - llm-network
-    ipc: host
-    # Use the host's IPC namespace for inter-process communication
+      dockerfile: Dockerfile.wrapper
+    container_name: fastapi-wrapper
+    restart: unless-stopped
     environment:
-      - MODEL_NAME=${MODEL_NAME:-/models/gemma-2-2b-it}
-      - HF_TOKEN=${HF_TOKEN}
-      - CHAT_TEMPLATE=${CHAT_TEMPLATE:-}
-    # Use command-line string concatenation for conditional command
-    # Only pass a chat template if one is provided
-    command: >
-      --model ${MODEL_NAME:-/models/gemma-2-2b-it}
-      ${CHAT_TEMPLATE:+--chat-template ${CHAT_TEMPLATE}}
-    # Command to run when the container starts
+      - PYTHONUNBUFFERED=1
+    # - API_KEY=your_secret_api_key
+    ports:
+      - "5000:5000"
+    depends_on:
+      - ollama
+    command: "uvicorn api_wrapper:app --host 0.0.0.0 --port 5000 --log-level debug"
+    networks:
+      - ollama_network
+
   caddy:
     # Service for the Caddy container
-    container_name: caddy-llm-container # Name of the container
+    container_name: caddy-ollama # Name of the container
     user: "1000:1000" # Set the user to '1000:1000'
     build:
       # Build context and Dockerfile for the Caddy container
@@ -49,15 +51,11 @@ services:
       - LLM_CONTAINER_PORT=${LLM_CONTAINER_PORT:-3334}
     ports:
       # Map port 3334 on the host to port 3334 in the container
-      - ${LLM_CONTAINER_PORT:-3334}:${LLM_CONTAINER_PORT:-3334}
+      - ${LLM_CONTAINER_PORT:-3334}:5000
     networks:
       # Attach the container to the llm-network
-      - llm-network
-    depends_on:
-      # Ensure the Caddy container starts after the LLM container
-      - llm-container
+      - ollama_network
 
 networks:
-  # Define the network for the services
-  llm-network:
+  ollama_network:
     driver: bridge
