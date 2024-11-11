@@ -4,6 +4,7 @@ services:
     build:
       context: . # Build context is the current directory
       dockerfile: Dockerfile.ollama # Use the Ollama-specific Dockerfile
+    user: "1000:1000" # Run as user:group 1000:1000
     container_name: ollama # Set a specific name for the container
     restart: unless-stopped # Automatically restart container unless manually stopped
     environment:
@@ -26,7 +27,8 @@ services:
     build:
       context: . # Build context is the current directory
       dockerfile: Dockerfile.wrapper # Use the wrapper-specific Dockerfile
-    container_name: fastapi-wrapper # Set container name
+    user: "1000:1000" # Run as user:group 1000:1000
+    container_name: authentication-ollama # Set container name
     restart: unless-stopped # Automatic restart policy
     environment:
       - PYTHONUNBUFFERED=1 # Enable unbuffered Python output
