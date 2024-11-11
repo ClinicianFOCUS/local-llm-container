@@ -72,13 +72,13 @@ async def proxy_request(path: str, request: Request):
         headers = dict(request.headers)
         if request.method == "GET":
             response = requests.get(f"{OLLAMA_URL}/{path}", headers=headers, params=request.query_params)
-            print(response)
         elif request.method == "POST":
             body = await request.json()
             response = requests.post(f"{OLLAMA_URL}/{path}", headers=headers, json=body)
-            print(response.json())
 
         # Return the response from the Ollama API
         return JSONResponse(content=response.json(), status_code=response.status_code)
+    except requests.exceptions.JSONDecodeError:
+        return JSONResponse(content=response.text, status_code=response.status_code)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
