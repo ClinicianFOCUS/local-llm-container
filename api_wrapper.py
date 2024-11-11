@@ -2,27 +2,18 @@ from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import requests
-import os
-import secrets
+from APIKeyManager import APIKeyManager
 
 # Initialize the FastAPI app
 app = FastAPI()
 
-# Function to generate a secure API key
-def generate_api_key():
-    return secrets.token_urlsafe(32)
-
 # Define the API key for authentication
-API_KEY = os.getenv("SESSION_API_KEY", generate_api_key())
-
-#Generate a new one if empty or doesnt exist
-if not API_KEY:
-    API_KEY = generate_api_key()
+API_KEY_MANAGER = APIKeyManager()
 
 print("\n" + "="*50)
 print(" " * 5 + "⚠️ IMPORTANT: API Key Information ⚠️" + " " * 5)
 print("="*50)
-print("\n" + " " * 3 + f" Session API Key: {API_KEY} " + "\n")
+print("\n" + " " * 3 + f" Session API Key: {API_KEY_MANAGER.api_key} " + "\n")
 print("="*50)
 print("\nNOTE:")
 print("- Do not share your API key publicly.")
@@ -30,46 +21,12 @@ print("- Avoid committing API keys in code repositories.")
 print("- If exposed, reset and replace it immediately.\n")
 print("="*50 + "\n")
 
-bearer_scheme = HTTPBearer()
-
 # Set the URL of the internal Ollama API (using the service name defined in docker-compose.yml)
 OLLAMA_URL = "http://ollama:11434"  # Docker will resolve "ollama" to the Ollama container's IP
 
 
-# Function to retrieve and validate the API key from the request headers
-def get_api_key(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)) -> str:
-    global API_KEY
-    token = credentials.credentials
-    if token == API_KEY:
-        return token
-    raise HTTPException(
-        status_code=401,
-        detail="Invalid or missing Bearer Token",
-    )
-
-# Function to check and retrieve the API key from the environment variables
-def check_api_key():
-    api_key = os.getenv('SESSION_API_KEY')
-    if not api_key:
-        # If not found, generate a new one and store it in environment variables
-        api_key = generate_api_key()
-        os.environ['SESSION_API_KEY'] = api_key
-    return api_key
-
-# Function to get the client's IP address from request headers
-def get_ip_from_headers(request: Request):
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    if forwarded_for:
-        return forwarded_for.split(",")[0]
-    return request.client.host
-
-# Define the health endpoint without authentication
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}
-
 # Define proxy endpoint with authentication dependency
-@app.api_route("/{path:path}", methods=["GET", "POST"], dependencies=[Depends(get_api_key)])
+@app.api_route("/{path:path}", methods=["GET", "POST"], dependencies=[Depends(API_KEY_MANAGER.verify_api_key)])
 async def proxy_request(path: str, request: Request):
     try:
         # Prepare headers and body based on the request method
