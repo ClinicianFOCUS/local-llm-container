@@ -3,14 +3,10 @@ services:
     image: ollama/ollama:latest
     container_name: ollama
     restart: unless-stopped
-    ports:
-      - "11434:11434"
-    volumes:
-      - ./ollama-data:/root/.ollama
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - OLLAMA_CONCURRENT_REQUESTS=2
-      - OLLAMA_QUEUE_ENABLED=true
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
+      - OLLAMA_CONCURRENT_REQUESTS=${OLLAMA_CONCURRENT_REQUESTS:-1}
+      - OLLAMA_QUEUE_ENABLED=${OLLAMA_QUEUE_ENABLED:-true}
     networks:
       - ollama_network
     deploy:
@@ -44,12 +40,9 @@ services:
       # Build context and Dockerfile for the Caddy container
       context: .
       dockerfile: Dockerfile.caddy
-
-    environment:
-      - LLM_CONTAINER_PORT=${LLM_CONTAINER_PORT:-3334}
     ports:
       # Map port 3334 on the host to port 3334 in the container
-      - ${LLM_CONTAINER_PORT:-3334}:3334
+      - ${PUBLIC_ACCESS_PORT:-3334}:${PUBLIC_ACCESS_PORT:-3334}
     networks:
       # Attach the container to the llm-network
       - ollama_network
