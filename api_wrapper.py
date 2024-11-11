@@ -1,3 +1,10 @@
+"""
+FastAPI proxy server for Ollama API with rate limiting and authentication.
+
+This module implements a proxy server that forwards requests to an Ollama API instance,
+adding authentication and rate limiting capabilities.
+"""
+
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -7,13 +14,13 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi import Limiter
 
-
 # Initialize the FastAPI app
 app = FastAPI()
 
-# Define the API key for authentication
+# Initialize API key management
 API_KEY_MANAGER = APIKeyManager()
 
+# Print API key information and security warnings
 print("\n" + "="*50)
 print(" " * 5 + "⚠️ IMPORTANT: API Key Information ⚠️" + " " * 5)
 print("="*50)
@@ -25,74 +32,98 @@ print("- Avoid committing API keys in code repositories.")
 print("- If exposed, reset and replace it immediately.\n")
 print("="*50 + "\n")
 
-# Set the URL of the internal Ollama API (using the service name defined in docker-compose.yml)
-OLLAMA_URL = "http://ollama:11434"  # Docker will resolve "ollama" to the Ollama container's IP
+#: str: The URL of the internal Ollama API service
+OLLAMA_URL = "http://ollama:11434"
 
+#: Limiter: Rate limiter instance configured with default limits
 limiter = Limiter(
     key_func=get_remote_address,
     default_limits=["1/second"]
 )
 
-# Add middleware for rate limiting
 @app.middleware("http")
 async def rate_limit_middleware(request, call_next):
     """
-    This function adds middleware to an application for rate limiting HTTP requests. 
-    It processes incoming requests and either forwards them for handling or returns a `429 Too Many Requests` 
-    response if the rate limit is exceeded.
+    Middleware for handling rate limiting of requests.
 
-    Example:
-    --------
+    This middleware intercepts all HTTP requests and enforces rate limiting rules.
+    If a request exceeds the rate limit, it returns a 429 status code.
 
-    .. code-block:: python
-
-        @app.middleware("http")
-        async def rate_limit_middleware(request, call_next):
-            try:
-                response = await call_next(request)
-                return response
-            except RateLimitExceeded as e:
-                logging.warning(f"Rate limit exceeded: {e}")
-                return PlainTextResponse("Rate limit exceeded. Try again later.", status_code=429)
-
-    Parameters:
-    -----------
-    - `request` : The incoming HTTP request.
-    - `call_next` : Callable to pass the request to the next handler.
+    Args:
+        request (Request): The incoming FastAPI request object
+        call_next (Callable): Function to call the next middleware or route handler
 
     Returns:
-    --------
-    - `response` : The HTTP response from the next handler in the middleware chain.
-    - If the rate limit is exceeded, returns a `PlainTextResponse` with a 429 status code and a "Rate limit exceeded" message.
+        Response: Either the normal response or a rate limit exceeded response
 
     Raises:
-    -------
-    - `RateLimitExceeded` : Raised when the request exceeds the allowed rate limit.
+        RateLimitExceeded: When the request rate exceeds the defined limit
     """
     try:
         response = await call_next(request)
         return response
     except RateLimitExceeded:
         return PlainTextResponse(
-            "Rate limit exceeded. Try again later.", status_code=429
+            "Rate limit exceeded. Try again later.",
+            status_code=429
         )
 
-# Define proxy endpoint with authentication dependency
 @app.api_route("/{path:path}", methods=["GET", "POST"], dependencies=[Depends(API_KEY_MANAGER.verify_api_key)])
 @limiter.limit("1/second")
 async def proxy_request(path: str, request: Request):
+    """
+    Proxy endpoint that forwards requests to the Ollama API.
+
+    This endpoint handles both GET and POST requests, forwarding them to the
+    corresponding Ollama API endpoint while maintaining headers and request body.
+
+    Args:
+        path (str): The path component of the URL to forward to Ollama
+        request (Request): The incoming FastAPI request object
+
+    Returns:
+        JSONResponse: The response from the Ollama API, wrapped in a JSONResponse
+
+    Raises:
+        HTTPException: When there's an error processing the request
+        JSONDecodeError: When the response from Ollama is not valid JSON
+        Exception: For any other unexpected errors
+
+    Examples:
+        >>> # GET request
+        >>> response = client.get("/api/v1/models")
+        
+        >>> # POST request
+        >>> response = client.post("/api/v1/generate", json={"prompt": "Hello"})
+    """
     try:
-        # Prepare headers and body based on the request method
         headers = dict(request.headers)
+        
         if request.method == "GET":
-            response = requests.get(f"{OLLAMA_URL}/{path}", headers=headers, params=request.query_params)
+            response = requests.get(
+                f"{OLLAMA_URL}/{path}",
+                headers=headers,
+                params=request.query_params
+            )
         elif request.method == "POST":
             body = await request.json()
-            response = requests.post(f"{OLLAMA_URL}/{path}", headers=headers, json=body)
+            response = requests.post(
+                f"{OLLAMA_URL}/{path}",
+                headers=headers,
+                json=body
+            )
 
-        # Return the response from the Ollama API
-        return JSONResponse(content=response.json(), status_code=response.status_code)
+        return JSONResponse(
+            content=response.json(),
+            status_code=response.status_code
+        )
     except requests.exceptions.JSONDecodeError:
-        return JSONResponse(content=response.text, status_code=response.status_code)
+        return JSONResponse(
+            content=response.text,
+            status_code=response.status_code
+        )
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=500
+        )
