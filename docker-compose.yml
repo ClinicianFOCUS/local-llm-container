@@ -1,58 +1,60 @@
 services:
-  # Define the services that will be run by Docker Compose
-  llm-container:
-    # Service for the LLM container
+  # Ollama service configuration - Main LLM service
+  ollama:
+    build:
+      context: . # Build context is the current directory
+      dockerfile: Dockerfile.ollama # Use the Ollama-specific Dockerfile
+    user: "1000:1000" # Run as user:group 1000:1000
+    container_name: ollama # Set a specific name for the container
+    restart: unless-stopped # Automatically restart container unless manually stopped
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all} # Configure GPU visibility, defaults to all
+      - OLLAMA_CONCURRENT_REQUESTS=${OLLAMA_CONCURRENT_REQUESTS:-1} # Number of concurrent requests, defaults to 1
+      - OLLAMA_QUEUE_ENABLED=${OLLAMA_QUEUE_ENABLED:-true} # Enable request queuing, defaults to true
+    networks:
+      - ollama_network # Connect to the ollama_network bridge network
     deploy:
-      # Resource allocation settings
       resources:
         reservations:
-          # Device reservations
           devices:
-            - driver: nvidia
-              count: all
-              capabilities:
-                - gpu
-    build:
-      # Build context and Dockerfile for the LLM container
-      context: .
-      dockerfile: Dockerfile.llm-cont
-    user: "1000:1000" # Set the user to '1000:1000'
-    # Ensure the container runs with the specified user and group ID
-    volumes:
-      # Mount the local models directory to the container's /models directory
-      - ./models:/models
-    networks:
-      # Attach the container to the llm-network
-      - llm-network
-    ipc: host
-    # Use the host's IPC namespace for inter-process communication
-    environment:
-      - MODEL_NAME=${MODEL_NAME:-/models/gemma-2-2b-it}
-      - HF_TOKEN=${HF_TOKEN}
-    command: --model ${MODEL_NAME:-/models/gemma-2-2b-it}
-    # Command to run when the container starts
-  caddy:
-    # Service for the Caddy container
-    container_name: caddy-llm-container # Name of the container
-    user: "1000:1000" # Set the user to '1000:1000'
-    build:
-      # Build context and Dockerfile for the Caddy container
-      context: .
-      dockerfile: Dockerfile.caddy
+            - driver: nvidia # Specify NVIDIA as the GPU driver
+              count: all # Use all available GPUs
+              capabilities: [gpu] # Enable GPU capabilities
 
+  # FastAPI wrapper service configuration - API interface for Ollama
+  # No need for env on the port and host as it runs internal on our docker network
+  fastapi-wrapper:
+    build:
+      context: . # Build context is the current directory
+      dockerfile: Dockerfile.wrapper # Use the wrapper-specific Dockerfile
+    user: "1000:1000" # Run as user:group 1000:1000
+    container_name: authentication-ollama # Set container name
+    restart: unless-stopped # Automatic restart policy
     environment:
-      - LLM_CONTAINER_PORT=${LLM_CONTAINER_PORT:-3334}
-    ports:
-      # Map port 3334 on the host to port 3334 in the container
-      - ${LLM_CONTAINER_PORT:-3334}:${LLM_CONTAINER_PORT:-3334}
-    networks:
-      # Attach the container to the llm-network
-      - llm-network
+      - PYTHONUNBUFFERED=1 # Enable unbuffered Python output
+      - SESSION_API_KEY=${SESSION_API_KEY:-} # Optional API key for authentication
     depends_on:
-      # Ensure the Caddy container starts after the LLM container
-      - llm-container
+      - ollama # Ensure Ollama service starts first
+    command: "uvicorn api_wrapper:app --host 0.0.0.0 --port 5000 --log-level debug" # Start FastAPI server
+    networks:
+      - ollama_network # Connect to the same network as Ollama
 
+  # Caddy service configuration - Reverse proxy and HTTPS
+  caddy:
+    container_name: caddy-ollama # Container name for Caddy service
+    user: "1000:1000" # Run as user:group 1000:1000
+    build:
+      context: . # Build context is current directory
+      dockerfile: Dockerfile.caddy # Use Caddy-specific Dockerfile
+    environment:
+      - PUBLIC_ACCESS_PORT=${PUBLIC_ACCESS_PORT:-3334} # The public access port we are using
+    ports:
+      # Expose the service port, configurable via PUBLIC_ACCESS_PORT env var
+      - ${PUBLIC_ACCESS_PORT:-3334}:${PUBLIC_ACCESS_PORT:-3334}
+    networks:
+      - ollama_network # Connect to the same network as other services
+
+# Network configuration
 networks:
-  # Define the network for the services
-  llm-network:
-    driver: bridge
+  ollama_network:
+    driver: bridge # Create a bridge network for container communication

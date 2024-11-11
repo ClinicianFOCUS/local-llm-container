@@ -1,0 +1,18 @@
+# Use the official Python image
+FROM python:3.9-slim
+
+#Set the working dir
+WORKDIR /app
+
+# Copy the requirements file to the container
+COPY ./requirements.txt ./requirements.txt
+
+# Pip upgrade
+RUN pip install --upgrade pip
+
+# download and install dependencies
+RUN pip install --no-cache-dir -r ./requirements.txt
+
+# Copy the FastAPI app to the container
+COPY ./api_wrapper.py ./api_wrapper.py
+COPY ./APIKeyManager.py ./APIKeyManager.py
