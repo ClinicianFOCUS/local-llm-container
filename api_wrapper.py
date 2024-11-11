@@ -97,7 +97,7 @@ async def proxy_request(path: str, request: Request):
         >>> response = client.post("/api/v1/generate", json={"prompt": "Hello"})
     """
     try:
-        headers = dict(request.headers)
+        headers = request.headers
         
         if request.method == "GET":
             response = requests.get(
