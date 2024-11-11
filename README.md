@@ -120,13 +120,13 @@ You can set these variables using the CLI:
 Windows:
 
 ```bash
-$env:MODEL_NAME='/models/you_models_folder'
+$env:SESSION_API_KEY="MY_API_KEY_TO_USE__FOR_AUTHENTICATION"
 ```
 
 Linux:
 
 ```bash
-export MODEL_NAME /models/you_models_folder
+export SESSION_API_KEY MY_API_KEY_TO_USE__FOR_AUTHENTICATION
 ```
 
 # Access the Services
