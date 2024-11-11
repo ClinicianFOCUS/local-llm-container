@@ -1,29 +1,119 @@
-## Summary
+# Ollama Docker Setup
 
-Repository for the setup of a local LLM container to support other activities and tools we are developing. This setup allows you to run a local instance of a Language Model (LLM) with GPU support and access it via HTTPS using Caddy reverse proxy.
+This repository contains a Docker Compose configuration for running Ollama with FastAPI wrapper and Caddy reverse proxy.
 
-# Prerequisites
+## Services
 
-- Docker and Docker Compose installed on your system.
-- NVIDIA Docker runtime for GPU support. Installation guide [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+### 1. Ollama
 
-# Setup
+- Base image: `ollama/ollama:latest`
+- Provides the core LLM functionality
+- GPU support enabled
+- Port: 11434
 
-1. Clone the Repository:
+#### Environment Variables
 
-   ```bash
-   git clone https://github.com/ClinicianFOCUS/local-llm-container.git
-   cd local-llm-container
-   ```
+- `NVIDIA_VISIBLE_DEVICES`: Controls GPU visibility (default: all)
+- `OLLAMA_CONCURRENT_REQUESTS`: Number of concurrent requests (default: 1)
+- `OLLAMA_QUEUE_ENABLED`: Queue system status (default: true)
 
-2. Download the LLM model you want to use and place it in the `/models` folder.
+### 2. FastAPI Wrapper
 
-# Environment Variables
+- Custom-built service using `Dockerfile.wrapper`
+- Provides API interface for Ollama
+- Port: 5000
 
-The following environment variables can be set to configure the services:
+#### Environment Variables
 
-- `MODEL_NAME`: The path to the LLM model file. Default is `/models/gemma-2-2b-it`.
-- `LLM_CONTAINER_PORT`: The port on which the LLM container will be accessible. Default is `3334`.
+- `PYTHONUNBUFFERED`: Set to 1 for unbuffered output
+- `SESSION_API_KEY`: Optional API key for session management
+
+### 3. Caddy
+
+- Custom-built service using `Dockerfile.caddy`
+- Serves as reverse proxy
+- Port: 3334 (configurable)
+
+#### Environment Variables
+
+- `PUBLIC_ACCESS_PORT`: Port configuration (default: 3334)
+
+## Getting Started
+
+1. Clone this repository:
+
+```bash
+git clone https://github.com/ClinicianFOCUS/local-llm-container.git
+cd local-llm-container
+```
+
+2. Launch the services:
+
+```bash
+docker-compose up -d
+```
+
+## 🚀 Launching Models
+
+After container deployment, you can launch models using either the CLI or API:
+
+### Using CLI
+
+1. Connect to the Ollama container:
+
+```bash
+docker exec -it ollama-service bash
+```
+
+2. Pull your desired model:
+
+```bash
+ollama pull gemma2:2b-instruct-q8_0
+# or any other model
+```
+
+3. Run the model:
+
+```bash
+ollama run gemma2:2b-instruct-q8_0
+```
+
+### Using API
+
+1. Pull a model via API:
+
+```bash
+curl -X POST http://localhost:3334/api/pull \
+     -H "Content-Type: application/json" \
+     -d '{"name": "gemma2:2b-instruct-q8_0"}'
+```
+
+2. Generate with the model:
+
+```bash
+curl -X POST http://localhost:3334/api/generate \
+     -H "Content-Type: application/json" \
+     -d '{
+           "model": "gemma2:2b-instruct-q8_0",
+           "prompt": "Your prompt here"
+         }'
+```
+
+### Available Models
+
+You can find available models at:
+
+- [Ollama Model Library](https://ollama.ai/library)
+
+## Environment Variables
+
+| Variable                   | Default | Description                     |
+| -------------------------- | ------- | ------------------------------- |
+| NVIDIA_VISIBLE_DEVICES     | all     | GPU devices available to Ollama |
+| OLLAMA_CONCURRENT_REQUESTS | 1       | Maximum concurrent requests     |
+| OLLAMA_QUEUE_ENABLED       | true    | Enable/disable request queue    |
+| SESSION_API_KEY            | -       | API key for FastAPI wrapper     |
+| PUBLIC_ACCESS_PORT         | 3334    | External port for Caddy         |
 
 You can set these variables using the CLI:
 
@@ -39,18 +129,13 @@ Linux:
 export MODEL_NAME /models/you_models_folder
 ```
 
-# Start the Services
-
-Use Docker Compose to start the services:
-
-```bash
-docker-compose up -d
-```
-
 # Access the Services
 
 Access the LLM API through the Caddy reverse proxy:
 
-- OpenAI API: `https://localhost:3334/v1/`
-- Docs: `https://localhost:3334/docs/`
-- OpenAI API Docs: `https://platform.openai.com/docs/api-reference/introduction`
+- API Endpoint: `https://localhost:3334/api/`
+- Docs: `https://github.com/ollama/ollama/blob/main/docs/api.md`
+
+## License
+
+This project is licensed under the AGPL-3.0 License - see the LICENSE file for details.
