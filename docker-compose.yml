@@ -1,52 +1,54 @@
 services:
+  # Ollama service configuration - Main LLM service
   ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    restart: unless-stopped
+    image: ollama/ollama:latest # Use the latest Ollama image from Docker Hub
+    container_name: ollama # Set a specific name for the container
+    restart: unless-stopped # Automatically restart container unless manually stopped
     environment:
-      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
-      - OLLAMA_CONCURRENT_REQUESTS=${OLLAMA_CONCURRENT_REQUESTS:-1}
-      - OLLAMA_QUEUE_ENABLED=${OLLAMA_QUEUE_ENABLED:-true}
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all} # Configure GPU visibility, defaults to all
+      - OLLAMA_CONCURRENT_REQUESTS=${OLLAMA_CONCURRENT_REQUESTS:-1} # Number of concurrent requests, defaults to 1
+      - OLLAMA_QUEUE_ENABLED=${OLLAMA_QUEUE_ENABLED:-true} # Enable request queuing, defaults to true
     networks:
-      - ollama_network
+      - ollama_network # Connect to the ollama_network bridge network
     deploy:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+            - driver: nvidia # Specify NVIDIA as the GPU driver
+              count: all # Use all available GPUs
+              capabilities: [gpu] # Enable GPU capabilities
 
+  # FastAPI wrapper service configuration - API interface for Ollama
+  # No need for env on the port and host as it runs internal on our docker network
   fastapi-wrapper:
     build:
-      context: .
-      dockerfile: Dockerfile.wrapper
-    container_name: fastapi-wrapper
-    restart: unless-stopped
+      context: . # Build context is the current directory
+      dockerfile: Dockerfile.wrapper # Use the wrapper-specific Dockerfile
+    container_name: fastapi-wrapper # Set container name
+    restart: unless-stopped # Automatic restart policy
     environment:
-      - PYTHONUNBUFFERED=1
-      - SESSION_API_KEY=${SESSION_API_KEY:-}
+      - PYTHONUNBUFFERED=1 # Enable unbuffered Python output
+      - SESSION_API_KEY=${SESSION_API_KEY:-} # Optional API key for authentication
     depends_on:
-      - ollama
-    command: "uvicorn api_wrapper:app --host 0.0.0.0 --port 5000 --log-level debug"
+      - ollama # Ensure Ollama service starts first
+    command: "uvicorn api_wrapper:app --host 0.0.0.0 --port 5000 --log-level debug" # Start FastAPI server
     networks:
-      - ollama_network
+      - ollama_network # Connect to the same network as Ollama
 
+  # Caddy service configuration - Reverse proxy and HTTPS
   caddy:
-    # Service for the Caddy container
-    container_name: caddy-ollama # Name of the container
-    user: "1000:1000" # Set the user to '1000:1000'
+    container_name: caddy-ollama # Container name for Caddy service
+    user: "1000:1000" # Run as user:group 1000:1000
     build:
-      # Build context and Dockerfile for the Caddy container
-      context: .
-      dockerfile: Dockerfile.caddy
+      context: . # Build context is current directory
+      dockerfile: Dockerfile.caddy # Use Caddy-specific Dockerfile
     ports:
-      # Map port 3334 on the host to port 3334 in the container
+      # Expose the service port, configurable via PUBLIC_ACCESS_PORT env var
       - ${PUBLIC_ACCESS_PORT:-3334}:${PUBLIC_ACCESS_PORT:-3334}
     networks:
-      # Attach the container to the llm-network
-      - ollama_network
+      - ollama_network # Connect to the same network as other services
 
+# Network configuration
 networks:
   ollama_network:
-    driver: bridge
+    driver: bridge # Create a bridge network for container communication
