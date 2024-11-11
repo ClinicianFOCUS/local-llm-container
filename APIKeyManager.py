@@ -8,9 +8,6 @@ storage, and validation of API keys for FastAPI applications.
 The module implements a secure way to handle API key authentication using the 
 HTTP Bearer scheme. It includes automatic key generation if none exists and
 validation middleware for FastAPI routes.
-
-:copyright: (c) 2024
-:license: MIT
 """
 
 import os
