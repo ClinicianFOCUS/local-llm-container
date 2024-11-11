@@ -1,111 +1,175 @@
-.. Local-LLM-Container documentation master file, created by
-   sphinx-quickstart on Wed Oct  9 09:26:35 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Ollama Docker Setup
+==================
 
-==============================
-Unburdening Primary Healthcare
-==============================
+Welcome to the Ollama Docker Setup documentation! This guide will help you set up and run Ollama with FastAPI wrapper and Caddy reverse proxy using Docker Compose.
 
-Welcome to the **Unburdening Primary Healthcare: An Open-Source AI Clinician Partner Platform** documentation. This project is a collaboration as part of the ClinicianFOCUS initiative with Conestoga College and Dr. Braedon Hendy. Below you'll find documentation for the core modules, API endpoints, and utilities used in this project. Below are the pages contents:
+Services Overview
+---------------
 
-.. contents::
-   :depth: 2
-   :local:
+The setup consists of three main services:
 
+Ollama Service
+^^^^^^^^^^^^^
 
-Docker-Compose Setup
-====================
+The core service providing LLM functionality:
 
-This documentation provides an overview of the Docker Compose configuration for the project, including the `llm-container` and `caddy` services.
+* Based on ``ollama/ollama:latest`` image
+* GPU support enabled
+* Runs on port 11434
+* Configurable through environment variables:
 
-Prerequisites
--------------
+  * ``NVIDIA_VISIBLE_DEVICES``: Controls GPU visibility (default: all)
+  * ``OLLAMA_CONCURRENT_REQUESTS``: Number of concurrent requests (default: 1)
+  * ``OLLAMA_QUEUE_ENABLED``: Queue system status (default: true)
 
-- **Docker** and **Docker Compose** must be installed on your system. (https://docs.docker.com/engine/install/)
-- **Nvidia Docker runtime** must be installed. (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
-- **Nvidia CUDA Toolkit** must be installed. (https://developer.nvidia.com/cuda-downloads)
+FastAPI Wrapper
+^^^^^^^^^^^^^
 
+A custom service providing API interface:
+
+* Built using custom ``Dockerfile.wrapper``
+* Runs on port 5000
+* Environment variables:
+
+  * ``PYTHONUNBUFFERED``: Set to 1 for unbuffered output
+  * ``SESSION_API_KEY``: Optional API key for session management
+
+Caddy Service
+^^^^^^^^^^^^
+
+Reverse proxy service:
+
+* Built using custom ``Dockerfile.caddy``
+* Runs on port 3334 (configurable)
+* Environment variables:
+
+  * ``PUBLIC_ACCESS_PORT``: Port configuration (default: 3334)
 
 Installation
-------------
+-----------
 
-Follow these steps to set up and run the services using Docker Compose:
+1. Clone the repository:
 
-1. **Clone the repository**:
+.. code-block:: bash
 
-   .. code-block:: bash
+   git clone https://github.com/ClinicianFOCUS/local-llm-container.git
+   cd local-llm-container
 
-      git clone https://github.com/ClinicianFOCUS/local-llm-container.git
-      cd local-llm-container
-
-2. **Ensure Docker and Docker Compose are installed**. You can install Docker by following the instructions on the [official Docker website](https://docs.docker.com/get-docker/).
-
-3. **Load your model**:
-
-   The LLM model is not included in the repository. You can download the model from the Huggingface (https://huggingface.co/)
-
-   We recommend installing Gemma-2-2b-it (https://huggingface.co/google/gemma-2-2b-it).
-
-   After downloading the model, place it in the `llm-container/models` directory and update the `MODEL_NAME` environment variable to the folder name of your model;
-
-   **Windows**
-
-      .. code-block:: bash
-
-            $env:MODEL_NAME="/models/gemma-2-2b-it"
-
-   **Linux**
-
-      .. code-block:: bash
-
-            MODEL_NAME=/models/gemma-2-2b-it
-
-
-4. **Build and start the services**:
-
-   .. code-block:: bash
-
-      docker-compose up -d --build
-
-   This command will build the Docker images defined in the `Dockerfile.llm-cont` and `Dockerfile.caddy`, and start both the `llm-container` and `caddy` services.
-
-5. **Verify the services are running**:
-
-   After the services start, you can check that the LLM model and Caddy web server are running correctly by accessing:
-
-   - **LLM Service**: Runs internally in the Docker container.
-   - **Caddy Web Server**: Accessible on port 3334 at `https://localhost:3334`. Pointing to the LLM Serivce.
-
-Usage
------
-
-**Running the Containers**
-
-To start the containers and ensure everything is running correctly, use the following command:
+2. Launch the services:
 
 .. code-block:: bash
 
    docker-compose up -d
 
-This command will:
-- Launch the `llm-container` for running the language model.
-- Start the `caddy` container to serve content via the Caddy web server.
+Using the Services
+----------------
 
-You can access the services on `https://localhost:3334/docs` to interact with the Caddy server and the deployed LLM model.
+Launching Models
+^^^^^^^^^^^^^^
 
-**Stopping the Containers**
+You can launch models using either the CLI or API interface.
 
-To stop the containers:
+CLI Method
+~~~~~~~~~
+
+1. Connect to the Ollama container:
 
 .. code-block:: bash
 
-   docker-compose down
+   docker exec -it ollama-service bash
 
-This will stop and remove the containers, but the built images and mounted volumes will persist.
+2. Pull your desired model:
 
+.. code-block:: bash
 
-Additonal Notes
-===============
+   ollama pull gemma2:2b-instruct-q8_0
 
-This service runs on the Aphrodite engine, a high-performance inference engine for large language models. Aphrodite is designed for efficient text generation and processing. It offers features like low-latency inference and multi-GPU support, making it ideal for scalable AI applications. For additional help or support, please check out their GitHub repository and documentation at https://github.com/PygmalionAI/aphrodite-engine.
+3. Run the model:
+
+.. code-block:: bash
+
+   ollama run gemma2:2b-instruct-q8_0
+
+API Method
+~~~~~~~~~
+
+1. Pull a model via API:
+
+.. code-block:: bash
+
+   curl -X POST http://localhost:3334/api/pull \
+        -H "Content-Type: application/json" \
+        -d '{"name": "gemma2:2b-instruct-q8_0"}'
+
+2. Generate with the model:
+
+.. code-block:: bash
+
+   curl -X POST http://localhost:3334/api/generate \
+        -H "Content-Type: application/json" \
+        -d '{
+              "model": "gemma2:2b-instruct-q8_0",
+              "prompt": "Your prompt here"
+            }'
+
+Configuration
+------------
+
+Environment Variables
+^^^^^^^^^^^^^^^^^^
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 20 50
+
+   * - Variable
+     - Default
+     - Description
+   * - NVIDIA_VISIBLE_DEVICES
+     - all
+     - GPU devices available to Ollama
+   * - OLLAMA_CONCURRENT_REQUESTS
+     - 1
+     - Maximum concurrent requests
+   * - OLLAMA_QUEUE_ENABLED
+     - true
+     - Enable/disable request queue
+   * - SESSION_API_KEY
+     - -
+     - API key for FastAPI wrapper
+   * - PUBLIC_ACCESS_PORT
+     - 3334
+     - External port for Caddy
+
+Setting Environment Variables
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Windows:
+
+.. code-block:: powershell
+
+   $env:MODEL_NAME='/models/you_models_folder'
+
+Linux:
+
+.. code-block:: bash
+
+   export MODEL_NAME /models/you_models_folder
+
+Accessing the Services
+-------------------
+
+Access the LLM API through the Caddy reverse proxy:
+
+* API Endpoint: ``https://localhost:3334/api/``
+* API Documentation: `Ollama API Docs <https://github.com/ollama/ollama/blob/main/docs/api.md>`_
+
+Resources
+--------
+
+* Available models can be found at the `Ollama Model Library <https://ollama.ai/library>`_
+
+License
+-------
+
+This project is licensed under the AGPL-3.0 License - see the LICENSE file for details.
