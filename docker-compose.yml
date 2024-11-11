@@ -42,6 +42,8 @@ services:
     build:
       context: . # Build context is current directory
       dockerfile: Dockerfile.caddy # Use Caddy-specific Dockerfile
+    environment:
+      - PUBLIC_ACCESS_PORT=${PUBLIC_ACCESS_PORT:-3334} # The public access port we are using
     ports:
       # Expose the service port, configurable via PUBLIC_ACCESS_PORT env var
       - ${PUBLIC_ACCESS_PORT:-3334}:${PUBLIC_ACCESS_PORT:-3334}
