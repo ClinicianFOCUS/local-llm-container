@@ -169,6 +169,17 @@ Resources
 
 * Available models can be found at the `Ollama Model Library <https://ollama.ai/library>`_
 
+
+Python Modules
+==============
+
+Below are the core Python modules used in this project.
+
+.. toctree::
+   :maxdepth: 2
+
+   source/modules
+
 License
 -------
 
