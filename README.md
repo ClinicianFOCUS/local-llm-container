@@ -53,7 +53,7 @@ cd local-llm-container
 docker-compose up -d
 ```
 
-## 🚀 Launching Models
+## Launching Models
 
 After container deployment, you can launch models using either the CLI or API:
 
