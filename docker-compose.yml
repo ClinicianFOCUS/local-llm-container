@@ -29,9 +29,7 @@ services:
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
-    # - API_KEY=your_secret_api_key
-    ports:
-      - "5000:5000"
+      - SESSION_API_KEY=${SESSION_API_KEY:-}
     depends_on:
       - ollama
     command: "uvicorn api_wrapper:app --host 0.0.0.0 --port 5000 --log-level debug"
@@ -51,7 +49,7 @@ services:
       - LLM_CONTAINER_PORT=${LLM_CONTAINER_PORT:-3334}
     ports:
       # Map port 3334 on the host to port 3334 in the container
-      - ${LLM_CONTAINER_PORT:-3334}:5000
+      - ${LLM_CONTAINER_PORT:-3334}:3334
     networks:
       # Attach the container to the llm-network
       - ollama_network

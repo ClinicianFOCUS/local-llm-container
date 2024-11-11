@@ -15,6 +15,10 @@ def generate_api_key():
 # Define the API key for authentication
 API_KEY = os.getenv("SESSION_API_KEY", generate_api_key())
 
+#Generate a new one if empty or doesnt exist
+if not API_KEY:
+    API_KEY = generate_api_key()
+
 print("\n" + "="*50)
 print(" " * 5 + "⚠️ IMPORTANT: API Key Information ⚠️" + " " * 5)
 print("="*50)
