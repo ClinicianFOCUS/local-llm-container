@@ -1,7 +1,9 @@
 services:
   # Ollama service configuration - Main LLM service
   ollama:
-    image: ollama/ollama:latest # Use the latest Ollama image from Docker Hub
+    build:
+      context: . # Build context is the current directory
+      dockerfile: Dockerfile.ollama # Use the Ollama-specific Dockerfile
     container_name: ollama # Set a specific name for the container
     restart: unless-stopped # Automatically restart container unless manually stopped
     environment:
