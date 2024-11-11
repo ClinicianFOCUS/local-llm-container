@@ -6,6 +6,7 @@ RUN pip install fastapi uvicorn requests
 
 # Copy the FastAPI app to the container
 COPY ./api_wrapper.py api_wrapper.py
+COPY ./APIKeyManager.py APIKeyManager.py
 
 # Expose FastAPI port
 EXPOSE 5000
