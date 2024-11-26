@@ -114,6 +114,7 @@ You can find available models at:
 | OLLAMA_QUEUE_ENABLED       | true    | Enable/disable request queue    |
 | SESSION_API_KEY            | -       | API key for FastAPI wrapper     |
 | PUBLIC_ACCESS_PORT         | 3334    | External port for Caddy         |
+| IP_ADDRESS                 | localhost    | Your IP address         |
 
 You can set these variables using the CLI:
 
