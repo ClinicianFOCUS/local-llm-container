@@ -1,3 +1,8 @@
+{
+    debug
+    default_sni default_sni
+}
+
 localhost:{$PUBLIC_ACCESS_PORT} {
     tls internal
     reverse_proxy fastapi-wrapper:5000
@@ -6,4 +11,13 @@ localhost:{$PUBLIC_ACCESS_PORT} {
 127.0.0.1:{$PUBLIC_ACCESS_PORT} {
     tls internal
     reverse_proxy fastapi-wrapper:5000
+}
+
+{$IP_ADDRESS}:{$PUBLIC_ACCESS_PORT} {
+    tls internal
+    reverse_proxy fastapi-wrapper:5000
+}
+
+default_sni {
+    tls internal
 }
