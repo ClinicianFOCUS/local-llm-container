@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile.caddy # Use Caddy-specific Dockerfile
     environment:
       - PUBLIC_ACCESS_PORT=${PUBLIC_ACCESS_PORT:-3334} # The public access port we are using
-      - IP_ADDRESS=${IP_ADDRESS:-127.0.0.1} # The domain name for the service
+      - IP_ADDRESS=${IP_ADDRESS:-127.0.0.1} # The IP address of the host machine
     ports:
       # Expose the service port, configurable via PUBLIC_ACCESS_PORT env var
       - ${PUBLIC_ACCESS_PORT:-3334}:${PUBLIC_ACCESS_PORT:-3334}
