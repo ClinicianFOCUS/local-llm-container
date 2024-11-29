@@ -3,3 +3,4 @@ models/**/
 
 !models/.gitkeep 
 .aider*
+.env
