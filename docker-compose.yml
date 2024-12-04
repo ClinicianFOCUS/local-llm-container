@@ -46,6 +46,7 @@ services:
   # Caddy service configuration - Reverse proxy and HTTPS
   caddy:
     container_name: caddy-ollama # Container name for Caddy service
+    restart: unless-stopped # Automatic restart policy
     user: "appuser:appgroup" # Run as user:group 1000:1000
     build:
       context: . # Build context is current directory
