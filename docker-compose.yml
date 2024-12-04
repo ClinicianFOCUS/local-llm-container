@@ -7,12 +7,15 @@ services:
     user: "1000:1000" # Run as user:group 1000:1000
     container_name: ollama # Set a specific name for the container
     restart: unless-stopped # Automatically restart container unless manually stopped
+    volumes:
+        - ./ollama-entrypoint.sh:/ollama-entrypoint.sh
     environment:
       - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all} # Configure GPU visibility, defaults to all
       - OLLAMA_CONCURRENT_REQUESTS=${OLLAMA_CONCURRENT_REQUESTS:-1} # Number of concurrent requests, defaults to 1
       - OLLAMA_QUEUE_ENABLED=${OLLAMA_QUEUE_ENABLED:-true} # Enable request queuing, defaults to true
     networks:
       - ollama_network # Connect to the ollama_network bridge network
+    entrypoint: ["/usr/bin/bash", "/ollama-entrypoint.sh"]
     deploy:
       resources:
         reservations:
