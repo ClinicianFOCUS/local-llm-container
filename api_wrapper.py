@@ -69,7 +69,7 @@ async def rate_limit_middleware(request, call_next):
         )
 
 @app.api_route("/{path:path}", methods=["GET", "POST"], dependencies=[Depends(API_KEY_MANAGER.verify_api_key)])
-@limiter.limit("1/second")
+@limiter.limit("10/second")
 async def proxy_request(path: str, request: Request):
     """
     Proxy endpoint that forwards requests to the Ollama API.
