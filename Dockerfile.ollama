@@ -1,4 +1,6 @@
 FROM ollama/ollama:latest
 
+RUN adduser --uid 1000 --disabled-password --gecos "" appuser
+
 # set permission for non root to ollama directory
 RUN mkdir -p /.ollama && chown -R 1000:1000 /.ollama
