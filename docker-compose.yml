@@ -4,15 +4,19 @@ services:
     build:
       context: . # Build context is the current directory
       dockerfile: Dockerfile.ollama # Use the Ollama-specific Dockerfile
-    user: "1000:1000" # Run as user:group 1000:1000
+    user: "appuser:appgroup" # Run as user:group 1000:1000
     container_name: ollama # Set a specific name for the container
     restart: unless-stopped # Automatically restart container unless manually stopped
+    volumes:
+        - ./ollama-entrypoint.sh:/ollama-entrypoint.sh
     environment:
+      - OLLAMA_KEEP_ALIVE=-1 # Keep the service running indefinitely
       - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all} # Configure GPU visibility, defaults to all
       - OLLAMA_CONCURRENT_REQUESTS=${OLLAMA_CONCURRENT_REQUESTS:-1} # Number of concurrent requests, defaults to 1
       - OLLAMA_QUEUE_ENABLED=${OLLAMA_QUEUE_ENABLED:-true} # Enable request queuing, defaults to true
     networks:
       - ollama_network # Connect to the ollama_network bridge network
+    entrypoint: ["/usr/bin/bash", "/ollama-entrypoint.sh"]
     deploy:
       resources:
         reservations:
@@ -27,7 +31,7 @@ services:
     build:
       context: . # Build context is the current directory
       dockerfile: Dockerfile.wrapper # Use the wrapper-specific Dockerfile
-    user: "1000:1000" # Run as user:group 1000:1000
+    user: "appuser:appgroup" # Run as user:group 1000:1000
     container_name: authentication-ollama # Set container name
     restart: unless-stopped # Automatic restart policy
     environment:
@@ -42,7 +46,8 @@ services:
   # Caddy service configuration - Reverse proxy and HTTPS
   caddy:
     container_name: caddy-ollama # Container name for Caddy service
-    user: "1000:1000" # Run as user:group 1000:1000
+    restart: unless-stopped # Automatic restart policy
+    user: "appuser:appgroup" # Run as user:group 1000:1000
     build:
       context: . # Build context is current directory
       dockerfile: Dockerfile.caddy # Use Caddy-specific Dockerfile

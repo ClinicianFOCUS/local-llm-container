@@ -1,4 +1,7 @@
 FROM ollama/ollama:latest
 
+# Create a group with GID 1000 and a user with UID 1000
+RUN addgroup --gid 1000 appgroup && adduser --uid 1000 --gid 1000 --disabled-password --gecos "" appuser
+
 # set permission for non root to ollama directory
 RUN mkdir -p /.ollama && chown -R 1000:1000 /.ollama
