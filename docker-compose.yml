@@ -4,6 +4,7 @@ services:
     build:
       context: . # Build context is the current directory
       dockerfile: Dockerfile.ollama # Use the Ollama-specific Dockerfile
+      no_cache: true # Disable caching during the build process
     user: "appuser:appgroup" # Run as user:group 1000:1000
     container_name: ollama # Set a specific name for the container
     restart: unless-stopped # Automatically restart container unless manually stopped
@@ -31,6 +32,7 @@ services:
     build:
       context: . # Build context is the current directory
       dockerfile: Dockerfile.wrapper # Use the wrapper-specific Dockerfile
+      no_cache: true # Disable caching during the build process
     user: "appuser:appgroup" # Run as user:group 1000:1000
     container_name: authentication-ollama # Set container name
     restart: unless-stopped # Automatic restart policy
@@ -51,6 +53,7 @@ services:
     build:
       context: . # Build context is current directory
       dockerfile: Dockerfile.caddy # Use Caddy-specific Dockerfile
+      no_cache: true # Disable caching during the build process
     environment:
       - PUBLIC_ACCESS_PORT=${PUBLIC_ACCESS_PORT:-3334} # The public access port we are using
     ports:
