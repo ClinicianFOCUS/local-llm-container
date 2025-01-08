@@ -99,6 +99,12 @@ curl -X POST http://localhost:3334/api/generate \
          }'
 ```
 
+3. Health Check:
+
+```bash
+curl -k https://localhost:3334/health
+```
+
 ### Available Models
 
 You can find available models at:
