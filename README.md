@@ -102,7 +102,7 @@ After container deployment, you can launch models using either the CLI or API:
 3. Health Check:
 
      ```bash
-     curl https://localhost:3334/health
+     curl http://localhost:3334/health
      ```
 
      Use `-k` flag with curl if using self signed certificates.
