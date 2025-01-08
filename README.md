@@ -42,16 +42,16 @@ This repository contains a Docker Compose configuration for running Ollama with 
 
 1. Clone this repository:
 
-```bash
-git clone https://github.com/ClinicianFOCUS/local-llm-container.git
-cd local-llm-container
-```
+     ```bash
+     git clone https://github.com/ClinicianFOCUS/local-llm-container.git
+     cd local-llm-container
+     ```
 
 2. Launch the services:
 
-```bash
-docker-compose up -d
-```
+     ```bash
+     docker-compose up -d
+     ```
 
 ## Launching Models
 
@@ -61,49 +61,51 @@ After container deployment, you can launch models using either the CLI or API:
 
 1. Connect to the Ollama container:
 
-```bash
-docker exec -it ollama-service bash
-```
+     ```bash
+     docker exec -it ollama-service bash
+     ```
 
 2. Pull your desired model:
 
-```bash
-ollama pull gemma2:2b-instruct-q8_0
-# or any other model
-```
+     ```bash
+     ollama pull gemma2:2b-instruct-q8_0
+     # or any other model
+     ```
 
 3. Run the model:
 
-```bash
-ollama run gemma2:2b-instruct-q8_0
-```
+     ```bash
+     ollama run gemma2:2b-instruct-q8_0
+     ```
 
 ### Using API
 
 1. Pull a model via API:
 
-```bash
-curl -X POST http://localhost:3334/api/pull \
-     -H "Content-Type: application/json" \
-     -d '{"name": "gemma2:2b-instruct-q8_0"}'
-```
+     ```bash
+     curl -X POST http://localhost:3334/api/pull \
+          -H "Content-Type: application/json" \
+          -d '{"name": "gemma2:2b-instruct-q8_0"}'
+     ```
 
 2. Generate with the model:
 
-```bash
-curl -X POST http://localhost:3334/api/generate \
-     -H "Content-Type: application/json" \
-     -d '{
-           "model": "gemma2:2b-instruct-q8_0",
-           "prompt": "Your prompt here"
-         }'
-```
+     ```bash
+     curl -X POST http://localhost:3334/api/generate \
+          -H "Content-Type: application/json" \
+          -d '{
+               "model": "gemma2:2b-instruct-q8_0",
+               "prompt": "Your prompt here"
+          }'
+     ```
 
 3. Health Check:
 
-```bash
-curl -k https://localhost:3334/health
-```
+     ```bash
+     curl https://localhost:3334/health
+     ```
+
+     Use `-k` flag with curl if using self signed certificates.
 
 ### Available Models
 
