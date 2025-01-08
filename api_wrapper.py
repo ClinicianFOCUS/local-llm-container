@@ -70,7 +70,7 @@ async def rate_limit_middleware(request, call_next):
     
 @app.get("/health")
 @limiter.limit("1/second")
-async def health_check():
+async def health_check(request: Request):
     """
     Health check endpoint to verify the service is running.
 
