@@ -67,6 +67,19 @@ async def rate_limit_middleware(request, call_next):
             "Rate limit exceeded. Try again later.",
             status_code=429
         )
+    
+@app.get("/health")
+@limiter.limit("1/second")
+async def health_check(request: Request):
+    """
+    Health check endpoint to verify the service is running.
+
+    Returns:
+        JSONResponse: A simple JSON response indicating the service is running
+    """
+    return JSONResponse(
+        content={"status": "ok"}
+    )
 
 @app.api_route("/{path:path}", methods=["GET", "POST"], dependencies=[Depends(API_KEY_MANAGER.verify_api_key)])
 @limiter.limit("10/second")
