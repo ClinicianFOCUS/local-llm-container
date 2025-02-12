@@ -6,4 +6,5 @@ RUN addgroup --gid 1000 appgroup && adduser --uid 1000 --gid 1000 --disabled-pas
 # set permission for non root to ollama directory
 RUN mkdir -p /.ollama && chown -R 1000:1000 /.ollama
 
+# copy the entrypoint script. This is what the container will run when it starts.
 COPY ./ollama-entrypoint.sh ollama-entrypoint.sh
