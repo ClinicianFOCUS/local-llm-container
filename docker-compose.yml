@@ -8,8 +8,6 @@ services:
     user: "appuser:appgroup" # Run as user:group 1000:1000
     container_name: ollama # Set a specific name for the container
     restart: unless-stopped # Automatically restart container unless manually stopped
-    volumes:
-        - ./ollama-entrypoint.sh:/ollama-entrypoint.sh
     environment:
       - OLLAMA_KEEP_ALIVE=-1 # Keep the service running indefinitely
       - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all} # Configure GPU visibility, defaults to all
