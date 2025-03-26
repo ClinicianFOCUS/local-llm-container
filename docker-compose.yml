@@ -15,6 +15,7 @@ services:
       - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all} # Configure GPU visibility, defaults to all
       - OLLAMA_CONCURRENT_REQUESTS=${OLLAMA_CONCURRENT_REQUESTS:-1} # Number of concurrent requests, defaults to 1
       - OLLAMA_QUEUE_ENABLED=${OLLAMA_QUEUE_ENABLED:-true} # Enable request queuing, defaults to true
+      - OLLAMA_CONTEXT_LENGTH=${OLLAMA_CONTEXT_LENGTH:-8192}
     networks:
       - ollama_network # Connect to the ollama_network bridge network
     entrypoint: ["/usr/bin/bash", "/ollama-entrypoint.sh"]
