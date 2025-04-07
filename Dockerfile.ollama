@@ -5,6 +5,3 @@ RUN addgroup --gid 1000 appgroup && adduser --uid 1000 --gid 1000 --disabled-pas
 
 # set permission for non root to ollama directory
 RUN mkdir -p /.ollama && chown -R 1000:1000 /.ollama
-
-# copy over the ollama modelfile. This is so we can make a 8k context window model.
-COPY ./Modelfile Modelfile

@@ -16,6 +16,7 @@ This repository contains a Docker Compose configuration for running Ollama with 
 - `NVIDIA_VISIBLE_DEVICES`: Controls GPU visibility (default: all)
 - `OLLAMA_CONCURRENT_REQUESTS`: Number of concurrent requests (default: 1)
 - `OLLAMA_QUEUE_ENABLED`: Queue system status (default: true)
+- `OLLAMA_CONTEXT_LENGTH`: Context length for models (default: 8192)
 
 ### 2. FastAPI Wrapper
 

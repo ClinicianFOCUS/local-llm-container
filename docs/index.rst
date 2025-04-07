@@ -21,6 +21,7 @@ The core service providing LLM functionality:
   * ``NVIDIA_VISIBLE_DEVICES``: Controls GPU visibility (default: all)
   * ``OLLAMA_CONCURRENT_REQUESTS``: Number of concurrent requests (default: 1)
   * ``OLLAMA_QUEUE_ENABLED``: Queue system status (default: true)
+  * ``OLLAMA_CONTEXT_LENGTH``: Context length for models (default: 8192)
 
 FastAPI Wrapper
 ^^^^^^^^^^^^^
