@@ -93,7 +93,8 @@ class RequestHandler:
         self.disconnect_event = asyncio.Event()
     
     async def __aenter__(self):
-        self.client = httpx.AsyncClient(timeout=30.0)
+        timeout = httpx.Timeout(timeout=180.0, connect=10.0, read=180.0, write=180.0, pool=180.0)
+        self.client = httpx.AsyncClient(timeout=timeout)
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -140,7 +141,7 @@ class RequestHandler:
         elif self.request.method == "POST":
             body = await self.request.json()
             return await self.client.post(
-                f"{OLLAMA_URL}/{self.path}",
+                target_url,
                 headers=headers,
                 json=body
             )
