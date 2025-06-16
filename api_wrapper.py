@@ -13,6 +13,19 @@ from APIKeyManager import APIKeyManager
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi import Limiter
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+
+# Create a logger
+logger = logging.getLogger(__name__)
 
 # Initialize the FastAPI app
 app = FastAPI()
@@ -133,17 +146,13 @@ class RequestHandler:
             )
     
     async def _handle_response(self, response):
-        """Process the response from Ollama service."""
-        print(f"Response status: {response.status_code}")
-        print(f"Response content type: {response.headers.get('content-type', 'unknown')}")
-        
+        """Process the response from Ollama service."""      
         try:
             response_content = response.json()
         except (ValueError, TypeError) as e:
-            print(f"JSON decode error: {e}")
+            logger.exception(f"JSON decode error: {e}")
             response_content = response.text
         
-        print(f"Response content: {response_content}")
         return JSONResponse(
             content=response_content,
             status_code=response.status_code
@@ -179,13 +188,13 @@ class RequestHandler:
                         response = task.result()
                         return await self._handle_response(response)
                     except httpx.ReadError as e:
-                        print(f"Read error from Ollama service: {e}")
+                        logger.exception(f"Read error from Ollama service: {e}")
                         return JSONResponse(
                             content={"error": "Connection error to Ollama service"},
                             status_code=502
                         )
                     except Exception as e:
-                        print(f"Error getting response: {e}")
+                        logger.exception(f"Error getting response: {e}")
                         return JSONResponse(
                             content={"error": str(e)},
                             status_code=500
@@ -199,7 +208,7 @@ class RequestHandler:
         except asyncio.CancelledError:
             raise HTTPException(status_code=499, detail="Request cancelled")
         except httpx.ReadError as e:
-            print(f"HTTP Read error: {e}")
+            logger.exception(f"HTTP Read error: {e}")
             return JSONResponse(
                 content={"error": "Connection error to Ollama service"},
                 status_code=502
@@ -212,7 +221,7 @@ class RequestHandler:
         except HTTPException:
             raise
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            logger.exception(f"Unexpected error: {e}")
             return JSONResponse(
                 content={"error": str(e)},
                 status_code=500
