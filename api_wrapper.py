@@ -308,8 +308,8 @@ class RequestHandler:
             # Shouldn't reach here
             raise HTTPException(status_code=500, detail="Unexpected state")
             
-        except asyncio.CancelledError:
-            raise HTTPException(status_code=499, detail="Request cancelled")
+        except asyncio.CancelledError as e:
+            raise HTTPException(status_code=499, detail="Request cancelled") from e
         except httpx.ReadError as e:
             logger.exception(f"HTTP Read error: {e}")
             return JSONResponse(
@@ -321,8 +321,8 @@ class RequestHandler:
                 content={"error": "Request to Ollama service timed out"},
                 status_code=504
             )
-        except HTTPException:
-            raise
+        except HTTPException as e:
+            raise e
         except Exception as e:
             logger.exception(f"Unexpected error: {e}")
             return JSONResponse(
