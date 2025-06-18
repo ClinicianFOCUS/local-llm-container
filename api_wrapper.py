@@ -56,7 +56,16 @@ limiter = Limiter(
 
 @app.middleware("http")
 async def rate_limit_middleware(request, call_next):
-    """Middleware for handling rate limiting of requests."""
+    """
+    Middleware for handling rate limiting of requests.
+    
+    :param request: The incoming HTTP request
+    :type request: Request
+    :param call_next: The next middleware or endpoint in the chain
+    :type call_next: callable
+    :return: HTTP response with rate limiting applied
+    :rtype: Response
+    """
     try:
         response = await call_next(request)
         return response
@@ -69,7 +78,14 @@ async def rate_limit_middleware(request, call_next):
 @app.get("/health")
 @limiter.limit("1/second")
 async def health_check(request: Request):
-    """Health check endpoint to verify the service is running."""
+    """
+    Health check endpoint to verify the service is running.
+    
+    :param request: The incoming HTTP request
+    :type request: Request
+    :return: JSON response indicating service status
+    :rtype: JSONResponse
+    """
     return JSONResponse(content={"status": "ok"})
 
 @app.api_route("/{path:path}", methods=["GET", "POST"], dependencies=[Depends(API_KEY_MANAGER.verify_api_key)])
@@ -79,30 +95,71 @@ async def proxy_request(path: str, request: Request):
     Proxy endpoint that forwards requests to the Ollama API.
     
     Handles both GET and POST requests with proper client disconnection handling.
+    
+    :param path: The API path to forward to
+    :type path: str
+    :param request: The incoming HTTP request
+    :type request: Request
+    :return: Proxied response from Ollama API
+    :rtype: JSONResponse
     """
     async with RequestHandler(request, path) as handler:
         return await handler.execute()
     
 class RequestHandler:
-    """Handles request forwarding and client disconnection monitoring."""
+    """
+    Handles request forwarding and client disconnection monitoring.
+    
+    This class manages the lifecycle of HTTP requests forwarded to the Ollama API,
+    including proper cleanup and client disconnection detection.
+    """
     
     def __init__(self, request: Request, path: str):
+        """
+        Initialize the request handler.
+        
+        :param request: The FastAPI request object
+        :type request: Request
+        :param path: The API path to forward to
+        :type path: str
+        """
         self.request = request
         self.path = path
         self.client = None
         self.disconnect_event = asyncio.Event()
     
     async def __aenter__(self):
+        """
+        Async context manager entry point.
+        
+        :return: The RequestHandler instance
+        :rtype: RequestHandler
+        """
         timeout = httpx.Timeout(timeout=180.0, connect=10.0, read=180.0, write=180.0, pool=180.0)
         self.client = httpx.AsyncClient(timeout=timeout)
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """
+        Async context manager exit point.
+        
+        :param exc_type: Exception type if an exception occurred
+        :type exc_type: type or None
+        :param exc_val: Exception value if an exception occurred
+        :type exc_val: Exception or None
+        :param exc_tb: Exception traceback if an exception occurred
+        :type exc_tb: traceback or None
+        """
         if self.client:
             await self.client.aclose()
     
     async def listen_for_disconnect(self):
-        """Listen for client disconnect events."""
+        """
+        Listen for client disconnect events.
+        
+        Monitors the request stream for disconnect messages and sets the
+        disconnect event when a disconnection is detected.
+        """
         try:
             while not self.disconnect_event.is_set():
                 message = await self.request.receive()
@@ -113,7 +170,15 @@ class RequestHandler:
             self.disconnect_event.set()
     
     async def check_client_disconnect(self):
-        """Monitor client connection status."""
+        """
+        Monitor client connection status.
+        
+        Periodically checks if the client is still connected and sets the
+        disconnect event if a disconnection is detected.
+        
+        :return: True when client disconnects
+        :rtype: bool
+        """
         while not self.disconnect_event.is_set():
             if await self.request.is_disconnected():
                 self.disconnect_event.set()
@@ -122,14 +187,32 @@ class RequestHandler:
         return True
     
     def _filter_headers(self, headers):
-        """Filter out problematic headers for forwarding."""
+        """
+        Filter out problematic headers for forwarding.
+        
+        Removes headers that should not be forwarded to the upstream service
+        to prevent conflicts or issues.
+        
+        :param headers: Original request headers
+        :type headers: dict
+        :return: Filtered headers safe for forwarding
+        :rtype: dict
+        """
         return {
             k: v for k, v in headers.items() 
             if k.lower() not in ['host', 'content-length', 'transfer-encoding']
         }
     
     async def _make_request(self):
-        """Create the appropriate HTTP request based on method."""
+        """
+        Create the appropriate HTTP request based on method.
+        
+        Constructs and sends either a GET or POST request to the Ollama API
+        with properly filtered headers and request data.
+        
+        :return: HTTP response from the Ollama API
+        :rtype: httpx.Response
+        """
         headers = self._filter_headers(self.request.headers)
         
         if self.request.method == "GET":
@@ -147,7 +230,17 @@ class RequestHandler:
             )
     
     async def _handle_response(self, response):
-        """Process the response from Ollama service."""      
+        """
+        Process the response from Ollama service.
+        
+        Converts the HTTP response to a JSONResponse, handling JSON parsing
+        errors gracefully by falling back to text content.
+        
+        :param response: The HTTP response from Ollama
+        :type response: httpx.Response
+        :return: Formatted JSON response
+        :rtype: JSONResponse
+        """      
         try:
             response_content = response.json()
         except (ValueError, TypeError) as e:
@@ -160,7 +253,16 @@ class RequestHandler:
         )
     
     async def execute(self):
-        """Execute the request with proper error handling and cancellation."""
+        """
+        Execute the request with proper error handling and cancellation.
+        
+        Orchestrates the request forwarding process with concurrent monitoring
+        for client disconnections. Handles various error conditions and ensures
+        proper cleanup of resources.
+        
+        :return: HTTP response or error response
+        :rtype: JSONResponse or HTTPException
+        """
         try:
             # Set up concurrent tasks
             tasks = [
