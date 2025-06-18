@@ -224,7 +224,7 @@ class RequestHandler:
         elif self.request.method == "POST":
             body = await self.request.json()
             return await self.client.post(
-                target_url,
+                f"{OLLAMA_URL}/{self.path}",
                 headers=headers,
                 json=body
             )
